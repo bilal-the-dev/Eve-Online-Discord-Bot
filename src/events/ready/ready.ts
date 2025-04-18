@@ -76,18 +76,23 @@ async function checkForNewKillMail(client: Client<true>) {
         const victimDeatils = `${victimCh.data.name} (${victimCp.data.name})`;
         let description = `${victimDeatils} lost their ${victimShip.data.name} in ${solarSystemInfo.name} (${solarSystemInfo.region_name}).`;
 
-        if (details.attackers[0].character_id) {
+        const attacker = details.attackers.find((a) => a.final_blow); //find the one who gave final blow
+
+        // checking with corp instead of ch because zkillboard bot was doing the same
+        if (attacker?.corporation_id) {
           const promises = [];
           promises.push(
-            fetchCharacterDetails(details.attackers[0].character_id),
-            fetchCorportationDetails(details.attackers[0].corporation_id!),
-            fetchShipDetails(details.attackers[0].ship_type_id)
+            fetchCharacterDetails(attacker.character_id!),
+            fetchCorportationDetails(attacker.corporation_id),
+            fetchShipDetails(attacker.ship_type_id)
           );
           const [attackerCh, attackerCp, attackerShip] =
             await Promise.all(promises);
 
           description += `  Final Blow by ${attackerCh.data.name} (${attackerCp.data.name}) flying in a ${attackerShip.data.name}.`;
         }
+
+        description += `\n\n > ${details.attackers.length} player(s) were involved.`;
 
         const embed = new EmbedBuilder()
           .setTitle(`${victimDeatils} | ${victimShip.data.name} | Killmail`)
