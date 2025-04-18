@@ -128,7 +128,9 @@ async function checkForNewKillMail(client: Client<true>) {
             itemRepeatedAmount.length * Number(marketPrices[i].currentPrice);
         }
 
-        description += ` Total Value: ${Number(sumPrice.toFixed()).toLocaleString()} ISK`;
+        const nFormat = new Intl.NumberFormat("en-US");
+
+        description += ` Total Value: ${nFormat.format(Number(sumPrice.toFixed()))} ISK`;
 
         description += `\n\n > ${details.attackers.length} player(s) were involved.`;
 
