@@ -49,6 +49,10 @@ export type Region = { region_id: number; name: string };
 
 export type customSolarSystemInfo = { name: string; region_name: string };
 
+export type FuzzWorksMarketData = {
+  [itemId: string]: ItemStats;
+};
+
 type Attacker = {
   damage_done: number;
   final_blow: boolean;
@@ -77,10 +81,27 @@ type Item = {
   quantity_destroyed?: number;
   quantity_dropped?: number;
   singleton: number;
+  items?: Item[];
 };
 
 type Position = {
   x: number;
   y: number;
   z: number;
+};
+
+type OrderStats = {
+  weightedAverage: string;
+  max: string;
+  min: string;
+  stddev: string;
+  median: string;
+  volume: string;
+  orderCount: string;
+  percentile: string;
+};
+
+export type ItemStats = {
+  buy: OrderStats;
+  sell: OrderStats;
 };

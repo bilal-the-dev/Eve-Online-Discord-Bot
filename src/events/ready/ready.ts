@@ -1,7 +1,10 @@
 import { Client, EmbedBuilder } from "discord.js";
 
 import registerAndAttachCommandsOnClient from "../../utils/registrars/registerCommands.js";
-import { killMailRecentResponse } from "../../utils/typings/types.js";
+import {
+  ItemStats,
+  killMailRecentResponse,
+} from "../../utils/typings/types.js";
 import {
   fetchCharacterDetails,
   fetchCorportationDetails,
@@ -10,6 +13,7 @@ import {
   fetchShipDetails,
   fetchSolarSystemDetails,
 } from "../../utils/eveAPI.js";
+import { fetchItemMarketPrices } from "../../utils/thirdPartyEveAPI.js";
 
 const oldKillMails: killMailRecentResponse = [];
 
@@ -91,6 +95,47 @@ async function checkForNewKillMail(client: Client<true>) {
 
           description += `  Final Blow by ${attackerCh.data.name} (${attackerCp.data.name}) flying in a ${attackerShip.data.name}.`;
         }
+
+        // calculate ISKs here
+
+        const itemIds: Array<number> = [details.victim.ship_type_id];
+
+        for (const item of details.victim.items) {
+          itemIds.push(item.item_type_id);
+
+          // some have nested items
+          if (item.items) {
+            for (const nestedItem of item.items) {
+              console.log(nestedItem.item_type_id);
+
+              itemIds.push(nestedItem.item_type_id);
+            }
+          }
+        }
+
+        console.log(itemIds);
+
+        const itemMarketDatas = await fetchItemMarketPrices([
+          ...new Set(itemIds),
+        ]);
+        // console.log(itemMarketDatas);
+
+        const sumPrice = Object.entries(itemMarketDatas).reduce(
+          (acc: number, cur: [string, ItemStats]) => {
+            const itemRepeatedAmount = itemIds.filter(
+              (i) => i === Number(cur[0])
+            );
+
+            console.log(
+              `${cur[0]} repeated ${itemRepeatedAmount.length} times`
+            );
+
+            return (acc += itemRepeatedAmount.length * Number(cur[1].sell.min));
+          },
+          0
+        );
+
+        description += ` Total: ${sumPrice} ISK`;
 
         description += `\n\n > ${details.attackers.length} player(s) were involved.`;
 

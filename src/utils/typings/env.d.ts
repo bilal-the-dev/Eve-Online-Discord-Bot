@@ -6,6 +6,8 @@ declare global {
       EVE_API_BASE_URL: string;
       EVE_IMAGE_CDN_BASE_URL: string;
       EVE_CORPORATION_ID: string;
+      EVE_FORGE_REGION_ID: string;
+      FUZZ_WORK_API_BASE_URL: string;
       SEAT_DB_HOST: string;
       SEAT_DB_DATABASE: string;
       SEAT_DB_USER: string;
