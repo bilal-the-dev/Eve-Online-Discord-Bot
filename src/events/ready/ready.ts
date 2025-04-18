@@ -1,10 +1,7 @@
 import { Client, EmbedBuilder } from "discord.js";
 
 import registerAndAttachCommandsOnClient from "../../utils/registrars/registerCommands.js";
-import {
-  ItemStats,
-  killMailRecentResponse,
-} from "../../utils/typings/types.js";
+import { killMailRecentResponse } from "../../utils/typings/types.js";
 import {
   fetchCharacterDetails,
   fetchCorportationDetails,
@@ -13,7 +10,7 @@ import {
   fetchShipDetails,
   fetchSolarSystemDetails,
 } from "../../utils/eveAPI.js";
-import { fetchItemMarketPrices } from "../../utils/thirdPartyEveAPI.js";
+import { fetchItemMarketPrice } from "../../utils/thirdPartyEveAPI.js";
 
 const oldKillMails: killMailRecentResponse = [];
 
@@ -43,7 +40,6 @@ async function checkForNewKillMail(client: Client<true>) {
 
       console.log(`Filling first time in cache the kill mails`);
     }
-
     // const newKillMails = data.slice(0, 10);
 
     const newKillMails = data.filter((d) =>
@@ -115,27 +111,24 @@ async function checkForNewKillMail(client: Client<true>) {
 
         console.log(itemIds);
 
-        const itemMarketDatas = await fetchItemMarketPrices([
-          ...new Set(itemIds),
-        ]);
-        // console.log(itemMarketDatas);
+        const uniqueItemIds = [...new Set(itemIds)];
 
-        const sumPrice = Object.entries(itemMarketDatas).reduce(
-          (acc: number, cur: [string, ItemStats]) => {
-            const itemRepeatedAmount = itemIds.filter(
-              (i) => i === Number(cur[0])
-            );
-
-            console.log(
-              `${cur[0]} repeated ${itemRepeatedAmount.length} times`
-            );
-
-            return (acc += itemRepeatedAmount.length * Number(cur[1].sell.min));
-          },
-          0
+        const marketPrices = await Promise.all(
+          uniqueItemIds.map((i) => fetchItemMarketPrice(i))
         );
 
-        description += ` Total: ${sumPrice} ISK`;
+        console.log(marketPrices.map((s) => s.currentPrice));
+
+        let sumPrice = 0;
+        for (const [i, itemId] of uniqueItemIds.entries()) {
+          const itemRepeatedAmount = itemIds.filter((i) => i === itemId);
+          console.log(`${itemId} came ${itemRepeatedAmount.length} times`);
+
+          sumPrice +=
+            itemRepeatedAmount.length * Number(marketPrices[i].currentPrice);
+        }
+
+        description += ` Total Value: ${Number(sumPrice.toFixed()).toLocaleString()} ISK`;
 
         description += `\n\n > ${details.attackers.length} player(s) were involved.`;
 

@@ -49,8 +49,8 @@ export type Region = { region_id: number; name: string };
 
 export type customSolarSystemInfo = { name: string; region_name: string };
 
-export type FuzzWorksMarketData = {
-  [itemId: string]: ItemStats;
+export type zkillboardMarketData = {
+  currentPrice: string;
 };
 
 type Attacker = {
@@ -88,20 +88,4 @@ type Position = {
   x: number;
   y: number;
   z: number;
-};
-
-type OrderStats = {
-  weightedAverage: string;
-  max: string;
-  min: string;
-  stddev: string;
-  median: string;
-  volume: string;
-  orderCount: string;
-  percentile: string;
-};
-
-export type ItemStats = {
-  buy: OrderStats;
-  sell: OrderStats;
 };
